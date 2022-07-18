@@ -78,6 +78,12 @@ def CPULoad():
     # print("Refresh CPU Load")
     stats.CPU.load()
 
+@async_job("CPU_Temp")
+@schedule(timedelta(seconds=CONFIG_DATA['STATS']['CPU']['TEMPERATURE'].get("INTERVAL", None)).total_seconds())
+def CPUTemp():
+    """ Refresh the CPU Temp """
+    # print("Refresh CPU Temp")
+    stats.CPU.temperature()
 
 @async_job("GPU_Stats")
 @schedule(timedelta(seconds=CONFIG_DATA['STATS']['GPU'].get("INTERVAL", None)).total_seconds())

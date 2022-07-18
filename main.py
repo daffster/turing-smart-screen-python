@@ -26,7 +26,7 @@ if __name__ == "__main__":
         is_posix = os.name == 'posix'
         if is_posix:
             signal.signal(signal.SIGQUIT, sighandler)
-
+        # print(sys.platform)
         # Initialize the display
         StaticDisplay.initialize_display()
 
@@ -43,6 +43,7 @@ if __name__ == "__main__":
 
         scheduler.CPUPercentage()
         scheduler.CPUFrequency()
+        # scheduler.CPUTemp()
         scheduler.CPULoad()
         scheduler.GPUStats()
         scheduler.MemoryStats()

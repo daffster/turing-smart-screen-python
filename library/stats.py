@@ -1,5 +1,7 @@
-import GPUtil
+import pyadl
 import psutil
+import sys
+
 
 import library.config as config
 import library.lcd_comm as lcd
@@ -103,8 +105,28 @@ class CPU:
             )
 
     @staticmethod
-    def Temperature():
-        pass
+    def temperature():
+        print( sys.platform )
+        if sys.platform=='win32':
+            print('Windows - Using OpenHardwareMonitor web endpoint')
+            import requests, json
+            r = requests.get('http://172.27.160.1:8085/data.json')
+            if r.status_code == 200:
+                data=json.loads(r.text)
+                if CONFIG_DATA['STATS']['CPU']['TEMPERATURE']['TEXT'].get("SHOW", False):
+                    lcd.DisplayText(
+                    ser=config.lcd_comm,
+                    text=str(int(cpu_temp)),
+                    x=CONFIG_DATA['STATS']['CPU']['TEMPERATURE']['TEXT'].get("X", 0),
+                    y=CONFIG_DATA['STATS']['CPU']['TEMPERATURE']['TEXT'].get("Y", 0),
+                    font=CONFIG_DATA['STATS']['CPU']['TEMPERATURE']['TEXT'].get("FONT", "roboto/Roboto-Regular.ttf"),
+                    font_size=CONFIG_DATA['STATS']['CPU']['TEMPERATURE']['TEXT'].get("FONT_SIZE", 10),
+                    font_color=CONFIG_DATA['STATS']['CPU']['TEMPERATURE']['TEXT'].get("FONT_COLOR", (0, 0, 0)),
+                    background_color=CONFIG_DATA['STATS']['CPU']['TEMPERATURE']['TEXT'].get("BACKGROUND_COLOR", (255, 255, 255)),
+                    background_image=CONFIG_DATA['STATS']['CPU']['TEMPERATURE']['TEXT'].get("BACKGROUND_IMAGE", None)
+                )
+        else:
+            pass
         # TODO: Built in function for *nix in psutil, for Windows can use WMI or a third party library
 
 
@@ -112,20 +134,20 @@ class GPU:
     @staticmethod
     def stats():
         # Unlike the CPU, the GPU pulls in all the stats at once
-        gpu_data = GPUtil.getGPUs()
+        gpu_data = pyadl.ADLManager.getInstance().getDevices()
 
-        memory_used_all = [item.memoryUsed for item in gpu_data]
-        memory_used = sum(memory_used_all) / len(memory_used_all)
+        core_clock_all = [item.getCurrentEngineClock() for item in gpu_data]
+        core_clock = sum(core_clock_all) / len(core_clock_all)
 
-        memory_total_all = [item.memoryTotal for item in gpu_data]
-        memory_total = sum(memory_total_all) / len(memory_total_all)
+        fan_total_all = [item.getCurrentFanSpeed(pyadl.ADL_DEVICE_FAN_SPEED_TYPE_PERCENTAGE) for item in gpu_data]
+        fan_total = sum(fan_total_all) / len(fan_total_all)
 
-        memory_percentage = (memory_used / memory_total) * 100
+        fan_percentage = fan_total
 
-        load_all = [item.load for item in gpu_data]
+        load_all = [item.getCurrentUsage() for item in gpu_data]
         load = (sum(load_all) / len(load_all)) * 100
 
-        temperature_all = [item.temperature for item in gpu_data]
+        temperature_all = [item.getCurrentTemperature() for item in gpu_data]
         temperature = sum(temperature_all) / len(temperature_all)
 
         if CONFIG_DATA['STATS']['GPU']['PERCENTAGE']['GRAPH'].get("SHOW", False):
@@ -144,20 +166,20 @@ class GPU:
                 background_image=CONFIG_DATA['STATS']['GPU']['PERCENTAGE']['GRAPH'].get("BACKGROUND_IMAGE", None)
             )
 
-        if CONFIG_DATA['STATS']['GPU']['MEMORY']['GRAPH'].get("SHOW", False):
-            # print(f"GPU Load: {load}")
+        if CONFIG_DATA['STATS']['GPU']['FAN']['GRAPH'].get("SHOW", False):
+            # print(f"GPU Fan: {load}")
             lcd.DisplayProgressBar(
                 ser=config.lcd_comm,
-                x=CONFIG_DATA['STATS']['GPU']['MEMORY']['GRAPH'].get("X", 0),
-                y=CONFIG_DATA['STATS']['GPU']['MEMORY']['GRAPH'].get("Y", 0),
-                width=CONFIG_DATA['STATS']['GPU']['MEMORY']['GRAPH'].get("WIDTH", 0),
-                height=CONFIG_DATA['STATS']['GPU']['MEMORY']['GRAPH'].get("HEIGHT", 0),
-                value=int(memory_percentage),
-                min_value=CONFIG_DATA['STATS']['GPU']['MEMORY']['GRAPH'].get("MIN_VALUE", 0),
-                max_value=CONFIG_DATA['STATS']['GPU']['MEMORY']['GRAPH'].get("MAX_VALUE", 100),
-                bar_color=CONFIG_DATA['STATS']['GPU']['MEMORY']['GRAPH'].get("BAR_COLOR", (0, 0, 0)),
-                bar_outline=CONFIG_DATA['STATS']['GPU']['MEMORY']['GRAPH'].get("BAR_OUTLINE", False),
-                background_image=CONFIG_DATA['STATS']['GPU']['MEMORY']['GRAPH'].get("BACKGROUND_IMAGE", None)
+                x=CONFIG_DATA['STATS']['GPU']['FAN']['GRAPH'].get("X", 0),
+                y=CONFIG_DATA['STATS']['GPU']['FAN']['GRAPH'].get("Y", 0),
+                width=CONFIG_DATA['STATS']['GPU']['FAN']['GRAPH'].get("WIDTH", 0),
+                height=CONFIG_DATA['STATS']['GPU']['FAN']['GRAPH'].get("HEIGHT", 0),
+                value=int(fan_percentage),
+                min_value=CONFIG_DATA['STATS']['GPU']['FAN']['GRAPH'].get("MIN_VALUE", 0),
+                max_value=CONFIG_DATA['STATS']['GPU']['FAN']['GRAPH'].get("MAX_VALUE", 100),
+                bar_color=CONFIG_DATA['STATS']['GPU']['FAN']['GRAPH'].get("BAR_COLOR", (0, 0, 0)),
+                bar_outline=CONFIG_DATA['STATS']['GPU']['FAN']['GRAPH'].get("BAR_OUTLINE", False),
+                background_image=CONFIG_DATA['STATS']['GPU']['FAN']['GRAPH'].get("BACKGROUND_IMAGE", None)
             )
 
         if CONFIG_DATA['STATS']['GPU']['TEMPERATURE']['TEXT'].get("SHOW", False):

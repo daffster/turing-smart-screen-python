@@ -113,6 +113,17 @@ STATS:
         FONT_SIZE: 13
         FONT_COLOR: 200, 200, 200
         BACKGROUND_COLOR: 50, 50, 50
+    TEMPERATURE:
+      # Display CPU Temperature every interval seconds
+      INTERVAL: 5
+      TEXT:
+        Show: TRUE
+        X: 110
+        Y: 124
+        FONT: roboto/Roboto-Bold.ttf
+        FONT_SIZE: 13
+        FONT_COLOR: 200, 200, 200
+        BACKGROUND_COLOR: 50, 50, 50
     LOAD:
       # In seconds. Longer intervals cause this to refresh more slowly.
       # Setting to lower values will display near real time data,
@@ -163,7 +174,7 @@ STATS:
         BAR_OUTLINE: False
         BACKGROUND_COLOR: 0, 0, 0
         # BACKGROUND_IMAGE: res/progressbars/320px-Green_Progress_bar_100.png
-    MEMORY:
+    FAN:
       GRAPH:
         SHOW: True
         X: 115
